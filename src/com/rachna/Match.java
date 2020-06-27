@@ -1,12 +1,18 @@
 package com.rachna;
 
-import javax.print.DocFlavor;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
-public class Match {
+public class Match
+{
     private  int noOfOvers;
+    private int score=0;
+    private int sequenceNo=0;
     private  int totalWicketsOfTeam;
+    private int jerseyNumberOfStriker;
+    private int jerseyNumberOfOtherPlayer;
     private  String currentPlayerOnStrike;
     private  String currentPlayerOnPitch;
     private  int totalScoreOfPLayerOnStrike=0;
@@ -14,7 +20,7 @@ public class Match {
     private  int totalBallsByPlayerOnStrike=0;
     private  int totalBallsByPlayerOnPitch=0;
     private  String currentBowler;
-    private  int totalWicketsOfBowler;
+   // private  int totalWicketsOfBowler;
     private ScoreBoard scoreBoard;
 
     Match(int noOfOvers,ScoreBoard scoreBoard) {
@@ -22,20 +28,17 @@ public class Match {
         this.scoreBoard=scoreBoard;
     }
 
-    public int calculateScore(Teams teamPlaying) {
+    public int calculateScore(Teams teamPlaying)
+    {
+        initializeValues(teamPlaying);
+        Map<Integer,String> playerDetailMap=Teams.retrivePlayerList(teamPlaying);
+        List<String> playerList = new ArrayList<>(playerDetailMap.values());
+        List<Integer> jerseyNumberList=new ArrayList<>(playerDetailMap.keySet());
 
-        int score = 0;
-        totalWicketsOfTeam = 0;
-        totalScoreOfPLayerOnStrike=0;
-        totalScoreOfPlayerOnPitch=0;
-        totalBallsByPlayerOnStrike=0;
-        totalBallsByPlayerOnPitch=0;
-        totalWicketsOfBowler=0;
-
-        List<String> playerList = Teams.retrivePlayerList(teamPlaying);
-        int sequenceNo = 0;
-        currentPlayerOnStrike = playerList.get(sequenceNo++);
-        currentPlayerOnPitch = playerList.get(sequenceNo++);
+        currentPlayerOnStrike = playerList.get(sequenceNo);
+        jerseyNumberOfStriker=jerseyNumberList.get(sequenceNo++);
+        currentPlayerOnPitch = playerList.get(sequenceNo);
+        jerseyNumberOfOtherPlayer=jerseyNumberList.get(sequenceNo++);
 
         for (int i = 1; i <= noOfOvers * 6; i++) {
             Random r = GeneralUtils.getRandomFunction();
@@ -59,13 +62,16 @@ public class Match {
                 {
                    // System.out.println(currentPlayerOnStrike+" total score of Striker "+totalScoreOfPLayerOnStrike+" "+totalBallsByPlayerOnStrike);
                     Teams team=teamPlaying;
-                    scoreBoard.updateScoreBoard(currentPlayerOnStrike,team, PlayerDetail.PlayerType.BATSMAN,totalScoreOfPLayerOnStrike,0,totalBallsByPlayerOnStrike);
+                    scoreBoard.updateScoreBoard(jerseyNumberOfStriker,currentPlayerOnStrike,team, PlayerDetail.PlayerType.BATSMAN,totalScoreOfPLayerOnStrike,0,totalBallsByPlayerOnStrike);
                     totalScoreOfPLayerOnStrike=0;
                     totalBallsByPlayerOnStrike=0;
                 }
                 totalWicketsOfTeam++;
                 if (sequenceNo < playerList.size())
+                {
+                    jerseyNumberOfStriker=jerseyNumberList.get(sequenceNo);
                     currentPlayerOnStrike = playerList.get(sequenceNo++);
+                }
             }
             System.out.println("Current Score : "+score);
 
@@ -75,9 +81,21 @@ public class Match {
             }
         }
         Teams team=teamPlaying;
-        scoreBoard.updateScoreBoard(currentPlayerOnStrike,team, PlayerDetail.PlayerType.BATSMAN,totalScoreOfPLayerOnStrike,0,totalBallsByPlayerOnStrike);
-        scoreBoard.updateScoreBoard(currentPlayerOnPitch,team, PlayerDetail.PlayerType.BATSMAN,totalScoreOfPlayerOnPitch,0,totalBallsByPlayerOnPitch);
+        scoreBoard.updateScoreBoard(jerseyNumberOfStriker,currentPlayerOnStrike,team, PlayerDetail.PlayerType.BATSMAN,totalScoreOfPLayerOnStrike,0,totalBallsByPlayerOnStrike);
+        scoreBoard.updateScoreBoard(jerseyNumberOfOtherPlayer,currentPlayerOnPitch,team, PlayerDetail.PlayerType.BATSMAN,totalScoreOfPlayerOnPitch,0,totalBallsByPlayerOnPitch);
         return score;
+    }
+
+    void initializeValues(Teams teamPlaying)
+    {
+        score = 0;
+        sequenceNo = 0;
+        totalWicketsOfTeam = 0;
+        totalScoreOfPLayerOnStrike=0;
+        totalScoreOfPlayerOnPitch=0;
+        totalBallsByPlayerOnStrike=0;
+        totalBallsByPlayerOnPitch=0;
+        //totalWicketsOfBowler=0;
     }
 
     public int getTotalWickets(Teams team)
@@ -89,11 +107,17 @@ public class Match {
         String temp = currentPlayerOnStrike;
         currentPlayerOnStrike=currentPlayerOnPitch;
         currentPlayerOnPitch= temp;
-        int tem=totalScoreOfPLayerOnStrike;
+
+        int tem=jerseyNumberOfStriker;
+        jerseyNumberOfStriker=jerseyNumberOfOtherPlayer;
+        jerseyNumberOfOtherPlayer=tem;
+
+        tem=totalScoreOfPLayerOnStrike;
         totalScoreOfPLayerOnStrike=totalScoreOfPlayerOnPitch;
         totalScoreOfPlayerOnPitch=tem;
-        int te=totalBallsByPlayerOnStrike;
+
+        tem=totalBallsByPlayerOnStrike;
         totalBallsByPlayerOnStrike=totalBallsByPlayerOnPitch;
-        totalBallsByPlayerOnPitch=te;
+        totalBallsByPlayerOnPitch=tem;
     }
 }
